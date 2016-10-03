@@ -4,16 +4,23 @@ import spark.ModelAndView;
 import spark.Spark;
 import spark.template.mustache.MustacheTemplateEngine;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Main {
+
+    static User user;           //initialized as null
+    static ArrayList<User> pastUsers = new ArrayList<User>();
 
     public static void main(String[] args) {
 	    Spark.get(
 	            "/",
                 ((request, response) -> {
                     HashMap m = new HashMap();
-                    m.put("name", "Alice");
+                    if (user != null){
+                        m.put("name", user.name);
+                    }
+                    m.put("pastUsers", pastUsers);
                     return new ModelAndView(m, "home.html");
                 }),
                 new MustacheTemplateEngine()
@@ -29,6 +36,18 @@ public class Main {
         Spark.post(
                 "/login",
                 ((request, response) -> {
+                    String name = request.queryParams("loginName");
+                    user = new User(name);
+                    pastUsers.add(user);
+                    response.redirect("/");
+                    return null;
+                })
+        );
+
+        Spark.post(
+                "/logout",
+                ((request, response) -> {
+                    user = null;
                     response.redirect("/");
                     return null;
                 })
